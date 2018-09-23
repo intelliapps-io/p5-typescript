@@ -2,22 +2,29 @@ class Sketch {
   allowTouch: boolean;
   blocks: Array<Block>;
   loopDegree: number;
+  loopHue: number;
   gameOver: boolean;
   height: number;
   width: number;
   level: number;
+  hueCounter: number;
+  getNextHue =(p: p5) => { 
+    if (this.loopHue > 300) { this.loopHue = 0 } else { this.loopHue += 10; }
+    return this.loopHue;
+  }
   levelHeight = (p: p5) => p.height - (this.height * (this.level + 1));
 
   private initialize(p: p5) {
     this.allowTouch = true;
     this.blocks = [];
+    this.loopHue = p.random(0, 255);
     this.loopDegree = p.random(0, 360);
     this.gameOver = false;
     this.height = 40;
     this.width = p.width < 600 ? p.width - 200 : 400;
     this.level = 1;
-    this.blocks.push(new Block(0 - this.width / 2, p.height - this.height, this.width, this.height, p)); // initialize level 0
-    this.blocks.push(new Block(0, this.levelHeight(p), this.width, this.height, p)); // initialize level 1
+    this.blocks.push(new Block(0 - this.width / 2, p.height - this.height, this.width, this.height, p, { hue: this.getNextHue(p) })); // initialize level 0
+    this.blocks.push(new Block(0, this.levelHeight(p), this.width, this.height, p, { hue: this.getNextHue(p) })); // initialize level 1
   }
 
   private slideCurrentLevel(p: p5) {
@@ -35,7 +42,7 @@ class Sketch {
   private onInput(func: Function, p: p5) {
     p.keyPressed = () => p.keyCode === 32 ? func() : null;
     p.touchStarted = () => { if (this.allowTouch) func(); this.allowTouch = false; }
-    p.touchEnded = () => setTimeout(() => this.allowTouch = true, 500);
+    p.touchEnded = () => setTimeout(() => this.allowTouch = true, 100);
   }
 
   private nextLevel(p: p5) {
@@ -55,7 +62,7 @@ class Sketch {
       if (difference >= 0) blockA.setPosition(blockB.position.x, blockA.position.y); // Move left on left-sided hangover
       
       // Next level
-      const newBlock = new Block(0, this.levelHeight(p), this.width, this.height, p);
+      const newBlock = new Block(0, this.levelHeight(p), this.width, this.height, p, { hue: this.getNextHue(p) });
       this.blocks.push(newBlock);
     } else {
       this.gameOver = true;
@@ -76,7 +83,7 @@ class Sketch {
       if (this.levelHeight(p) < p.height / 2) p.translate(0, (-1 * this.levelHeight(p)) + Math.floor(p.height / 2)); // shift scene down when blocks stack too high
       this.slideCurrentLevel(p);
       this.onInput(() => this.nextLevel(p), p);
-      this.blocks.forEach(block => block.draw(p)); // render blocks
+      this.blocks.forEach(block => block.draw()); // render blocks
     } else {
       p.background(p.color(255, 0, 0));
       p.translate((p.width / 2) - 100, p.height / 2); // center x-axis

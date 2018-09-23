@@ -1,84 +1,78 @@
+interface IOptions {
+  hue: number;
+}
+
 class Block {
-  p: p5;
-  floating: boolean = true;
+  private p: p5;
   position: p5.Vector;
   width: number;
   height: number;
+  options: IOptions;
 
-  constructor(x: number, y: number, width: number, height: number, p: p5) {
+  constructor(x: number, y: number, width: number, height: number, p: p5, options?: IOptions) {
     this.p = p;
     this.position = this.p.createVector(x, y);
     this.width = width;
     this.height = height;
+    this.options = options;
   }
 
   setPosition(x: number, y: number, ) {
     this.position = this.p.createVector(x, y);
   }
 
-  draw(p: p5) {
+  draw() {
+    const p = this.p;
+    const border = 8;
     p.push();
 
     p.translate(this.position.x, this.position.y);
-    p.rect(0, 0, this.width, this.height);
+
+    p.colorMode(p.HSB);
+    p.noStroke();
+
+    p.fill(this.options ? this.options.hue : 0, 70, 100);
+    p.rect(0, 0, this.width, this.height); // Main Block
+
+    const v = {
+      top: {
+        left: p.createVector(border, border),
+        right: p.createVector(this.width - border, border)
+      },
+      bottom: {
+        left: p.createVector(border, this.height - border),
+        right: p.createVector(this.width - border, this.height - border)
+      }
+    };
+    
+    p.fill(this.options ? this.options.hue : 0, 20, 255); // top
+    p.quad(0, 0, this.width, 0, v.top.right.x, v.top.right.y, v.top.left.x, v.top.left.y); 
+
+    p.fill(this.options ? this.options.hue : 0, 40, 255); // left
+    p.quad(0, 0, v.top.left.x, v.top.left.y , v.bottom.left.x, v.bottom.left.y, 0, this.height); 
+
+    p.fill(this.options ? this.options.hue : 0, 40, 0, 0.5); // bottom
+    p.quad(v.bottom.left.x, v.bottom.left.y, v.bottom.right.x, v.bottom.right.y, this.width, this.height, 0, this.height); 
+
+    p.fill(this.options ? this.options.hue : 0, 20, 0, 0.3); // right
+    p.quad(v.top.right.x, v.top.right.y, this.width, 0, this.width, this.height, v.bottom.right.x, v.bottom.right.y); 
+
+
+
+
+    // p.quad(0, 0, border, border, this.width, 0, this.width - border, border);
+
+
+    /*
+    p.fill(255, 0, 255, 0.2);
+    p.rect(0, 0, this.width, border); // Top
+    p.rect(0, 0, border, this.height); // Left
+
+    p.fill(255, 0, 0, 0.2);
+    p.rect(0, this.height - border, this.width, border); // Bottom
+    p.rect(this.width - border, 0, border, this.height); // Right
+    */
 
     p.pop();
   }
 }
-
-
-// class Rect {
-//   width: number;
-//   height: number;
-//   floating: boolean = true;
-//   body: Matter.Body;
-
-//   constructor(x: number, y: number, width: number, height: number, options?: Matter.IChamferableBodyDefinition) {
-//     this.width = width;
-//     this.height = height;
-//     this.body = Matter.Bodies.rectangle(x, y, width, height, options);
-//     Matter.World.add(world, [ this.body ]);
-//   }
-
-//   removeFromWorld() {
-//     Matter.World.remove(world, this.body);
-//   }
-
-//   setPosition(x: number, y: number) {
-//     if (this.floating) {
-//       const options: Matter.IChamferableBodyDefinition = {
-//         position: {x, y}
-//       };
-//       Matter.Body.set(this.body, options);
-//     }
-//   }
-
-//   drop() {
-//     this.floating = false;
-//     const options: Matter.IChamferableBodyDefinition = {
-//       isStatic: false
-//     };
-//     Matter.Body.set(this.body, options);
-//   }
-
-
-//   draw(p: p5) {
-//     p.beginShape();
-//     this.body.vertices.forEach(v => p.vertex(v.x, v.y)); 
-//     p.endShape(p.CLOSE);
-//   }
-// }
-
-// draw(p: p5) {
-//   const posX = this.body.position.x;
-//   const posY = this.body.position.y;
-//   const vertices = this.body.vertices;
-
-//   p.push();
-
-//   p.translate(posX, posY);
-//   p.rotate(this.body.angle);
-//   p.rect(0, 0, this.width, this.height);
-
-//   p.pop();
-// }
