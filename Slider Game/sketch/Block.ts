@@ -57,22 +57,6 @@ class Block {
     p.fill(this.options ? this.options.hue : 0, 20, 0, 0.3); // right
     p.quad(v.top.right.x, v.top.right.y, this.width, 0, this.width, this.height, v.bottom.right.x, v.bottom.right.y); 
 
-
-
-
-    // p.quad(0, 0, border, border, this.width, 0, this.width - border, border);
-
-
-    /*
-    p.fill(255, 0, 255, 0.2);
-    p.rect(0, 0, this.width, border); // Top
-    p.rect(0, 0, border, this.height); // Left
-
-    p.fill(255, 0, 0, 0.2);
-    p.rect(0, this.height - border, this.width, border); // Bottom
-    p.rect(this.width - border, 0, border, this.height); // Right
-    */
-
     p.pop();
   }
 }
