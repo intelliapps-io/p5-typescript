@@ -1,24 +1,24 @@
-var sketch = (p: p5) => {
+class Sketch {
+  p: p5;
+  
+  constructor(p: p5) {
+    this.p = p;
+  }
 
-    const earth = new Earth();
+  setup() {
+    const { p } = this;
+    p.createCanvas(p.windowWidth, p.windowHeight);
+  }
 
-    p.preload = () => {
-
-    }
-    
-    p.setup = () => {
-        p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-        earth.setup(p);
-    }
-    
-    p.windowResized = () => {
-        p.resizeCanvas(p.windowWidth, p.windowHeight);
-    }
-    
-    p.draw = () => {
-        p.background(100);
-        earth.draw(p);
-    }
+  draw() {
+    const { p } = this;
+    p.translate(p.width / 2, 0);
+    p.background(150);
+  }
 }
 
-var sketchP = new p5(sketch);
+const mySketch = new p5((p: p5) => {
+  const sketch = new Sketch(p);
+  p.setup = () => sketch.setup();
+  p.draw = () => sketch.draw();
+});

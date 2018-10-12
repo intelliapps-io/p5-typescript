@@ -4,7 +4,7 @@
   "description": "Project to quickly get something working in [p5.js](https://p5js.org/) and [typescript](https://www.typescriptlang.org/)",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"browser-sync start --server -w\" \" tsc --watch\""
+    "start": "concurrently \"browser-sync start --server --no-open -w --files '!sketch/**'\" \" tsc --watch\""
   },
   "homepage": "https://github.com/Gaweph/p5-typescript-starter#readme",
   "devDependencies": {
