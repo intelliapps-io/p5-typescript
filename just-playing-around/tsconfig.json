@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outDir": "./dist/",
+        "sourceRoot": "./src/",
+        "rootDir": "./src/",
+        "sourceMap": true,
+        "noImplicitAny": true
+      }
+}
