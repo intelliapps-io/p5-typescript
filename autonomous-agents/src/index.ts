@@ -1,3 +1,5 @@
+import * as p5 from "p5";
+
 class Sketch {
   p: p5;
   
@@ -12,7 +14,6 @@ class Sketch {
 
   draw() {
     const { p } = this;
-    p.translate(p.width / 2, 0);
     p.background(150);
   }
 }
