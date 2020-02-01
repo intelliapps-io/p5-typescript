@@ -12,19 +12,6 @@ interface IPathLine {
   distTo: number
 }
 
-const getPathLines = (vertices: p5.Vector[]) => {
-  let totalLength = 0, pathLines: IPathLine[] = []
-  for (let i = 0; i < vertices.length; i++) {
-    const lastDistTo = i - 1 > 0 ? pathLines[i - 1].distTo : 0,
-      p1 = vertices[i],
-      p2 = vertices[i === vertices.length - 1 ? 0 : i + 1],
-      distFrom = lastDistTo,
-      distTo = distFrom + p1.dist(p2)
-    pathLines.push({ p1, p2, distFrom, distTo })
-  }
-  return pathLines
-}
-
 const getPathLength = (vertices: p5.Vector[]) => {
   let length = 0
   vertices.forEach((p1, i) => {
@@ -34,30 +21,42 @@ const getPathLength = (vertices: p5.Vector[]) => {
   return length
 }
 
+const getPathLines = (vertices: p5.Vector[]) => {
+  let pathLines: IPathLine[] = []
+  for (let i = 0; i < vertices.length; i++) {
+    const lastDistTo = i !== 0 ? pathLines[i - 1].distTo : 0,
+      p1 = vertices[i],
+      p2 = vertices[i === vertices.length - 1 ? 0 : i + 1],
+      distFrom = lastDistTo,
+      distTo = distFrom + p1.dist(p2)
+    pathLines.push({ p1, p2, distFrom, distTo })
+  }
+  return pathLines
+}
+
 export class PathShape {
   pathLines: IPathLine[]
   pointCount: number
   totalLength: number
 
+  counter: number = 0
+
   constructor(vertices: p5.Vector[], pointCount: number) {
     this.pathLines = getPathLines(vertices)
     this.totalLength = getPathLength(vertices)
     this.pointCount = pointCount
-
-    console.log(this.totalLength, this.pathLines[this.pathLines.length - 1].distTo)
   }
 
-  createPoints(): p5.Vector[] {
+  createPoints(offset: number): p5.Vector[] {
     let points: p5.Vector[] = []
     const spacing = this.totalLength / this.pointCount
 
-    console.log(this.pathLines)
-    console.log(spacing)
+    // console.log(this.pathLines)
+    // console.log(spacing)
 
     // go over length of path
-    for (let distance = 0; distance < this.totalLength - spacing; distance += spacing) {
-      const pathLine = this.pathLines.find(
-        _pathLine => _pathLine.distFrom <= distance && _pathLine.distTo >= distance)
+    for (let distance = 0; distance < this.totalLength; distance += spacing) {
+      const pathLine = this.pathLines.find(_pathLine => _pathLine.distFrom <= distance && _pathLine.distTo >= distance)
       if (pathLine) {
         const pathLength = pathLine.distTo - pathLine.distFrom,
           angleBetween = Math.atan2(pathLine.p2.y - pathLine.p1.y, pathLine.p2.x - pathLine.p1.x),
@@ -69,7 +68,7 @@ export class PathShape {
       }
     }
 
-    console.log(points)
+    // console.log(points)
 
     return points
   }
@@ -78,6 +77,7 @@ export class PathShape {
     const { p } = window
     p.fill(0, 0, 0)
     p.strokeWeight(2)
-    this.createPoints().forEach(point => p.point(point.x, point.y))
+    this.createPoints(this.counter).forEach((point, i) => p.point(point.x, point.y))
+    this.counter++
   }
 }

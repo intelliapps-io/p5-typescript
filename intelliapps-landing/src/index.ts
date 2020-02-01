@@ -48,8 +48,8 @@ class Sketch {
     
     // this.logo.draw()
 
-    p.frameRate(1)
-    p.noLoop()
+    p.frameRate(5)
+    // p.noLoop()
   }
 }
 
