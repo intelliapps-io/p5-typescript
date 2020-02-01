@@ -2,8 +2,9 @@ import p5 from "p5"
 import { IPathLine, getPathLength, getPathLines } from "./helpers/path"
 
 function getBaseOffset(totalLength: number, _offset: number): number {
-  if (_offset >= 0 && _offset <= totalLength) return _offset
-  const base = _offset - (Math.floor(_offset / totalLength)) * totalLength
+  if (_offset >= 0 && _offset <= totalLength)
+    return _offset
+  const base = _offset - Math.floor(_offset / totalLength) * totalLength
   return _offset < 0 ? totalLength - base : base
 }
 
@@ -17,73 +18,114 @@ const getPathPoint = (pathLines: IPathLine[], totalLength: number, _offset: numb
       p2x = p1.x + distAlongPath * Math.cos(angleBetween),
       p2y = p1.y + distAlongPath * Math.sin(angleBetween)
     return [p2x, p2y]
-  } else {
-    console.error(new Error('no path found'))
-    return [0, 0]
   }
+  return [0, 0]
 }
 
 export class PathPoint {
-  protected point: p5.Vector
   protected offset: number
   protected pathLines: IPathLine[]
   protected totalLength: number
-  velocity: p5.Vector;
-  acceleration: p5.Vector;
+  protected target: p5.Vector
+  protected pos: p5.Vector
+  protected velocity: p5.Vector
+  protected acceleration: p5.Vector
 
   constructor(vertices: p5.Vector[], offset: number) {
     this.offset = offset
     this.pathLines = getPathLines(vertices)
     this.totalLength = getPathLength(vertices)
     const [x, y] = getPathPoint(this.pathLines, this.totalLength, this.offset)
-    this.point = window.p.createVector(x, y)
+    this.target = window.p.createVector(x + 1, y + 1)
+    this.pos = this.target
+    // this.pos = window.p.createVector(window.p.random( window.p.windowWidth), window.p.random(window.p.windowHeight))
     this.velocity = window.p.createVector(0, 0)
     this.acceleration = window.p.createVector(0, 0)
   }
 
-  private updatePathPoint() {
+  private setTarget() {
     const [x, y] = getPathPoint(this.pathLines, this.totalLength, this.offset)
-    this.point.x = x; this.point.y = y
+    this.target.x = x; this.target.y = y
+  }
+
+  private addForce(force: p5.Vector) {
+    this.acceleration.add(force)
+  }
+
+  private getSteerForce(target: p5.Vector, options: {
+    maxForce: number,
+    maxSpeed: number,
+    avoid?: boolean,
+    maxDistance?: number
+  }): p5.Vector {
+    const { p } = window
+    const { maxForce, maxSpeed, avoid, maxDistance } = options
+    let force = maxForce
+    let speed = maxSpeed
+
+    // seeking direction
+    const desired = p5.Vector.sub(target, this.pos)
+    const dist = desired.mag()
+    if (dist <= (maxDistance ? maxDistance : dist)) {
+      // speed = p.map(dist, 0, maxDistance ? maxDistance : 100, 0, maxSpeed)
+      speed = p.map(dist,  maxDistance ? maxDistance : 100, 0, 0, maxSpeed)
+      desired.mult(avoid ? -1 : 1)
+      desired.setMag(speed)
+
+      // steering force
+      const steer = p5.Vector.sub(desired, this.velocity)
+      steer.limit(force)
+
+      return steer
+    } else {
+      return p.createVector(0,0) // TODO: make global
+    }
   }
 
   private update() {
     const { p } = window
-    let mouse = p.createVector(p.mouseX, p.mouseY);
-    mouse.sub(this.point);
-    mouse.setMag(-50);
+    const mouse = p.createVector(p.mouseX, p.mouseY) // TODO: make global
 
-    this.acceleration = mouse;
-    this.acceleration.add(p.createVector(0.1, 0.1));
+    // seek target
+    const steer = this.getSteerForce(this.target, {
+      maxForce: 1,
+      maxSpeed: 3
+    })
+    this.addForce(steer)
 
-    this.velocity.add(this.acceleration);
-    this.point.add(this.velocity);
+    // avoid mouse
+    const avoid = this.getSteerForce(mouse, {
+      maxForce: 10,
+      maxSpeed: 50,
+      maxDistance: 100,
+      avoid: true,
+    })
+    this.addForce(avoid)
 
-    if (this.point.x > p.width || this.point.x < 0) {
-      this.velocity.x = this.velocity.x * -1;
-    }
-    if (this.point.y > p.height || this.point.y < 0) {
-      this.velocity.y = this.velocity.y * -1;
-    }
-
-    this.velocity.limit(2);
+    this.pos.add(this.velocity)
+    this.velocity.add(this.acceleration)
+    this.acceleration.mult(0.5)
   }
 
   public draw(styler?: () => void) {
     const { p } = window
+    this.update()
     if (styler) {
       p.push()
-        styler()
-        p.point(this.point.x, this.point.y)
+      styler()
+      p.point(this.pos.x, this.pos.y)
       p.pop()
     } else
-      p.point(this.point.x, this.point.y)
+      p.point(this.pos.x, this.pos.y)
   }
 
-  public getPoint = () => this.point
+  public getPoint = () => this.pos
 
   public setOffset(func: (offset: number) => number) {
-    this.offset = func(this.offset)
-    this.updatePathPoint()
-    this.update()
+    const offset = func(this.offset)
+    if (this.offset !== offset) {
+      this.offset = offset
+      this.setTarget()
+    }
   }
 }

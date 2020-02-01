@@ -33,13 +33,14 @@ export class PathShape {
     p.strokeWeight(2)
 
     p.beginShape()
+    
     this.pathPoints.forEach(pathPoint => {
       const point = pathPoint.getPoint()
       pathPoint.draw(() => {
         p.strokeWeight(4)
       })
-      p.vertex(point.x, point.y)
-      pathPoint.setOffset(offset => offset + 1)
+      p.curveVertex(point.x, point.y)
+      pathPoint.setOffset(offset => offset + 0.5)
     })
     p.endShape()
   }
