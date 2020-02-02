@@ -1,4 +1,4 @@
-import * as p5 from "p5";
+import p5 from "p5";
 
 class Sketch {
   p: p5;
@@ -19,7 +19,8 @@ class Sketch {
 }
 
 const mySketch = new p5((p: p5) => {
-  const sketch = new Sketch(p);
-  p.setup = () => sketch.setup();
-  p.draw = () => sketch.draw();
+  window.p = p                      // set global p5 property
+  const sketch = new Sketch(p)      // create p5 sketch
+  p.setup = () => sketch.setup()    // main setup method
+  p.draw = () => sketch.draw()      // main draw method
 });

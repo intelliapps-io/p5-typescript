@@ -4,12 +4,12 @@
   "description": "Project to quickly get something working in [p5.js](https://p5js.org/) and [typescript](https://www.typescriptlang.org/)",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack-dev-server"
+    "start": "webpack-dev-server"
   },
   "devDependencies": {
-    "@types/p5": "^0.7.1",
+    "@types/p5": "^0.9.0",
     "html-webpack-plugin": "^3.2.0",
-    "p5": "^0.7.3",
+    "p5": "^0.9.0",
     "ts-import-plugin": "^1.5.5",
     "ts-loader": "^5.3.3",
     "typescript": "^3.0.3",

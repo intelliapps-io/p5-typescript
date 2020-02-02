@@ -37,7 +37,8 @@ export class PathPoint {
     this.totalLength = getPathLength(vertices)
     const [x, y] = getPathPoint(this.pathLines, this.totalLength, this.offset)
     this.target = window.p.createVector(x, y)
-    this.pos = window.p.createVector(x, y)
+    this.pos = this.target
+    // this.pos = window.p.createVector(window.p.random( window.p.windowWidth), window.p.random(window.p.windowHeight))
     this.velocity = window.p.createVector(0, 0)
     this.acceleration = window.p.createVector(0, 0)
   }
@@ -47,51 +48,63 @@ export class PathPoint {
     this.target.x = x; this.target.y = y
   }
 
-  private addForce = (force: p5.Vector) => this.acceleration.add(force)
+  private addForce(force: p5.Vector) {
+    this.acceleration.add(force)
+  }
 
-  private createForce(target: p5.Vector, options: {
+  private getSteerForce(target: p5.Vector, options: {
     maxForce: number,
     maxSpeed: number,
     avoid?: boolean,
-    maxDist?: number
+    maxDistance?: number
   }): p5.Vector {
-    const { maxForce, maxSpeed, maxDist, avoid } = options, { p } = window
+    const { p } = window
+    const { maxForce, maxSpeed, avoid, maxDistance } = options
+    let force = maxForce
+    let speed = maxSpeed
 
-    const desired = p5.Vector.sub(target, this.pos), dist = desired.mag()
+    // seeking direction
+    const desired = p5.Vector.sub(target, this.pos)
+    const dist = desired.mag()
+    if (dist <= (maxDistance ? maxDistance : dist)) {
+      // speed = p.map(dist, 0, maxDistance ? maxDistance : 100, 0, maxSpeed)
+      speed = p.map(dist,  maxDistance ? maxDistance : 100, 0, 0, maxSpeed)
+      desired.mult(avoid ? -1 : 1)
+      desired.setMag(speed)
 
-    if (avoid) {
-      desired.mult(-1)
-      desired.setMag(p.map(dist, 100, 0, 0, maxSpeed))
-    } else
-      desired.setMag(p.map(dist, 0, 100, 0, maxSpeed))
+      // steering force
+      const steer = p5.Vector.sub(desired, this.velocity)
+      steer.limit(force)
 
-    const steer = p5.Vector.sub(desired, this.velocity)
-    steer.limit(p.map(dist, 0, 100, 0, maxForce))
-
-    if (!maxDist || dist <= maxDist)
       return steer
-    else
-      return window.ZERO_VECTOR
+    } else {
+      return p.createVector(0,0) // TODO: make global
+    }
   }
 
   private update() {
     const { p } = window
+    const mouse = p.createVector(p.mouseX, p.mouseY) // TODO: make global
 
-    // Seek Target
-    this.addForce(this.createForce(this.target, {
+    // seek target
+    const steer = this.getSteerForce(this.target, {
       maxForce: 1,
-      maxSpeed: 10,
-    }))
+      maxSpeed: 3,
+      maxDistance: 999999999
+    })
+    this.addForce(steer)
 
-    // Avoid Mouse
-    this.addForce(this.createForce(window.MOUSE_VECTOR, {
-      maxForce: 5,
-      maxSpeed: 10,
-      maxDist: 50,
-      avoid: true
-    }))
+    // console.log(steer)
 
-    // hanlde 2d motion
+    // avoid mouse
+    const avoid = this.getSteerForce(mouse, {
+      maxForce: 10,
+      maxSpeed: 50,
+      maxDistance: 60,
+      avoid: true,
+    })
+    this.addForce(avoid)
+
     this.pos.add(this.velocity)
     this.velocity.add(this.acceleration)
     this.acceleration.mult(0)

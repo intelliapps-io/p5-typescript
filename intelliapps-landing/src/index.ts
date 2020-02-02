@@ -32,7 +32,7 @@ class Sketch {
   constructor(p: p5) {
     this.p = p;
     this.logo = new LogoShape(p, 50, 50, { scale: 1 })
-    this.pathShape = new PathShape(getVertices(50, 50, 1), 300)
+    this.pathShape = new PathShape(getVertices(50, 50, 1), 350)
   }
 
   setup() {
@@ -48,14 +48,23 @@ class Sketch {
     
     // this.logo.draw()
 
-    // p.frameRate(5)
+    // p.frameRate(0.5)
     // p.noLoop()
   }
 }
 
 const mySketch = new p5((p: p5) => {
-  window.p = p                      // set global p5 property
-  const sketch = new Sketch(p)      // create p5 sketch
-  p.setup = () => sketch.setup()    // main setup method
-  p.draw = () => sketch.draw()      // main draw method
+  window.p = p                          // set global p5 property
+  window.ZERO_VECTOR = p.createVector() // global zero vector
+
+  // global mouse vector
+  window.MOUSE_VECTOR = p.createVector(p.mouseX, p.mouseY)
+  window.addEventListener('mousemove', () => {
+    window.MOUSE_VECTOR.x = p.mouseX
+    window.MOUSE_VECTOR.y = p.mouseY
+  })
+
+  const sketch = new Sketch(p)          // create p5 sketch
+  p.setup = () => sketch.setup()        // main setup method
+  p.draw = () => sketch.draw()          // main draw method
 });
